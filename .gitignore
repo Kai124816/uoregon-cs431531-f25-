@@ -1,0 +1,81 @@
+# ===== C++ Build Artifacts =====
+# Object files
+*.o
+*.obj
+
+# ===== Binaries =====
+test_*
+
+# Static libraries
+*.a
+*.lib
+
+# Shared/Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debugging and profiling
+*.dSYM/
+*.ipch
+*.pdb
+*.idb
+*.stackdump
+*.gcda
+*.gcno
+*.gcov
+*.prof
+
+# ===== Binary Files =====
+*.bin
+
+# ===== Build Directories =====
+/build/
+/helpful_info/
+/bin/
+/lib/
+/dist/
+/out/
+/Debug/
+/Release/
+
+# ===== Reference Code Directories =====
+/ref/
+
+# ===== Directory with helper files =====
+/helper_code/
+
+# ===== Directory with output files =====
+/output/
+
+
+# ===== IDE & Editor Files =====
+# VS Code
+.vscode/
+*.code-workspace
+
+# CLion / JetBrains
+.idea/
+cmake-build-*/
+
+# CodeBlocks
+*.depend
+*.layout
+*.cbp
+
+# ===== OS-Specific Files =====
+.DS_Store
+Thumbs.db
+
+# ===== tns files =====
+*.tns
+
+# ===== binary tensors =====
+*.bin
+
+
