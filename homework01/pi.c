@@ -73,20 +73,65 @@ void usage(int argc, char** argv)
 double calcPi_Serial(int num_steps)
 {
     double pi = 0.0;
+    double step = 1.0 / num_steps;
+    double x;
 
-    return pi;
+    for(int i = 0; i < num_steps; i++){
+        x = (i + 0.5) * step;
+        pi += pow((1.0 - x * x), 0.5);
+    }
+
+    return pi * step * 4.0;
 }
 
 double calcPi_P1(int num_steps)
 {
     double pi = 0.0;
+    double step = 1.0 / (double)num_steps;
 
-    return pi;
+    #pragma omp parallel
+    {
+        double local_sum = 0.0;  
+
+        #pragma omp for
+        for (int i = 0; i < num_steps; i++) {
+            double x = (i + 0.5) * step;
+            local_sum += pow((1.0 - x * x),0.5);
+        }
+
+        #pragma omp atomic
+        pi += local_sum;
+    }
+
+    return pi * step * 4.0;
 }
+
 
 double calcPi_P2(int num_steps)
 {
     double pi = 0.0;
+    int inside_circle = 0;
 
+    #pragma omp parallel
+    {
+        int local_inside = 0;
+
+        #pragma omp for
+        for(int i = 0; i < num_steps; i++){
+            double rand_x = rand() / (double) RAND_MAX; 
+            double rand_y = rand() / (double) RAND_MAX; 
+
+            double dist_squared = pow(rand_x,2) + pow(rand_y,2);
+            
+            if(dist_squared <= 1.0){
+                local_inside += 1;
+            }
+        }
+
+        #pragma omp atomic
+        inside_circle += local_inside;
+    }
+
+    pi = 4 * ((double)inside_circle / num_steps);
     return pi;
 }

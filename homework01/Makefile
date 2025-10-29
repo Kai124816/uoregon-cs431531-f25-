@@ -1,8 +1,8 @@
 CC =  /usr/bin/gcc
 CFLAGS  = -Wall -g -std=c99
-CFLAGS += -O3 -fopenmp -lm
-CFLAGS += -D_POSIX_C_SOURCE=200112L
-LIBS =
+CFLAGS += -O3 -fopenmp 
+CFLAGS += -D_POSIX_C_SOURCE=200112L  
+LIBS = -lm
 
 SRC  = $(notdir $(wildcard *.c)) 
 OBJS = $(addsuffix .o, $(basename $(SRC)))

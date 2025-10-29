@@ -15,4 +15,4 @@ export OMP_PLACES="cores"
 export OMP_PROC_BIND='spread'
 export OMP_DISPLAY_ENV='true'
 
-./pi 100000000
+./pi 100000
