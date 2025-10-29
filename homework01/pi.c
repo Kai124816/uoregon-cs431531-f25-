@@ -72,6 +72,7 @@ void usage(int argc, char** argv)
 
 double calcPi_Serial(int num_steps)
 {
+    printf("test\n");
     double pi = 0.0;
     double step = 1.0 / num_steps;
     double x;
