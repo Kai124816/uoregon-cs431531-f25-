@@ -10,6 +10,8 @@
 #SBATCH --ntasks-per-node=1             ### number of MPI tasks per node
 #SBATCH --cpus-per-task=128              ### number of CPUs for each task
 
+cd /projects/cis431_531/$USER/individual_projects/homework01/
+
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export OMP_PLACES="cores"
 export OMP_PROC_BIND='spread'
