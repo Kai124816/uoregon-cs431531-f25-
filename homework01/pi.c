@@ -100,7 +100,7 @@ double calcPi_P1(int num_steps)
             local_sum += pow((1.0 - x * x),0.5);
         }
 
-        #pragma omp atomic
+        #pragma omp atomic //Atomic is faster
         pi += local_sum;
     }
 
@@ -129,7 +129,7 @@ double calcPi_P2(int num_steps)
             }
         }
 
-        #pragma omp atomic
+        #pragma omp atomic //Atomic is faster
         inside_circle += local_inside;
     }
 
