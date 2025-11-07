@@ -1,18 +1,22 @@
 #!/bin/bash
-#SBATCH --account=cis431_531            ### your ‘charge’ account 
-#SBATCH --partition=compute             ### queue to submit to
-#SBATCH --job-name=prefix               ### job name
-#SBATCH --output=output/prefix_%A.out   ### file in which to store job stdout
-#SBATCH --error=output/prefix_%A.err    ### file in which to store job stderr
-#SBATCH --time=00:15:00                 ### wall-clock time limit, in minutes
-#SBATCH --mem=16000M                    ### memory limit per node (K|M|G|T)
-#SBATCH --nodes=1                       ### number of nodes to use
-#SBATCH --ntasks-per-node=1             ### number of MPI tasks per node
-#SBATCH --cpus-per-task=128              ### number of CPUs for each task
+#SBATCH --account=cis431_531
+#SBATCH --partition=compute
+#SBATCH --job-name=compu_pi
+#SBATCH --output=output/comp_pi_%A.out
+#SBATCH --error=output/comp_pi_%A.err
+#SBATCH --time=00:15:00
+#SBATCH --mem=16000M
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=28   # allocate the *maximum* you’ll need
 
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export OMP_PLACES="cores"
-export OMP_PROC_BIND='spread'
-export OMP_DISPLAY_ENV='true'
+for threads in 8 16 24 28
+do
+    export OMP_NUM_THREADS=$threads
+    echo "Running with $threads threads"
+    ./prefix 1000 1
+    ./prefix 10000 1
+    ./prefix 100000 1
+    ./prefix 1000000 1
+done
 
-./prefix 33554432 5
