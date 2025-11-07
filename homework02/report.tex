@@ -1,0 +1,267 @@
+%%
+%% This is file `sample-acmtog.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `all,journal,bibtex,acmtog')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-acmtog.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%%
+%% Commands for TeXCount
+%TC:macro \cite [option:text,text]
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+%%
+%% The first command in your LaTeX source must be the \documentclass
+%% command.
+%%
+%% For submission and review of your manuscript please change the
+%% command to \documentclass[manuscript, screen, review]{acmart}.
+%%
+%% When submitting camera ready or to TAPS, please change the command
+%% to \documentclass[sigconf]{acmart} or whichever template is required
+%% for your publication.
+%%
+%%
+\documentclass[acmtog]{acmart}
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmlicensed}
+\copyrightyear{2025}
+\acmYear{2025}
+\acmDOI{XXXXXXX.XXXXXXX}
+
+%%
+%% These commands are for a JOURNAL article.
+\acmJournal{TOG}
+% \acmVolume{37}
+% \acmNumber{4}
+\acmArticle{1}
+\acmMonth{10}
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%% \acmSubmissionID{123-A56-BU3}
+
+%%
+%% For managing citations, it is recommended to use bibliography
+%% files in BibTeX format.
+%%
+%% You can then either use BibTeX with the ACM-Reference-Format style,
+%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
+%% support for advanced citation of software artefact from the
+%% biblatex-software package, also separately available on CTAN.
+%%
+%% Look at the sample-*-biblatex.tex files for templates showcasing
+%% the biblatex styles.
+%%
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+\citestyle{acmauthoryear}
+
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+\title{Homework 2 Report}
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%% used to denote shared contribution to the research.
+\author{Kai Hogan}
+% \authornote{Both authors contributed equally to this research.}
+\email{khogan@uoregon.edu}
+
+
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+\renewcommand{\shortauthors}{Hogan}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+This report compares the performance of one sequential and two parallel prefix sum algorithms. The sequential algorithm computes prefix sums in a single pass through the array. The first parallel algorithm, Hillis-Steele scan (O(NlogN)), iteratively adds elements from increasing offsets at each step. The second parallel algorithm, two-pass approach (2(N-1)), first builds a binary tree of partial sums (upsweep phase), then uses these to compute the final prefix sums (downsweep phase). I tested each implementation on the Talapas system using 8, 16, 24, and 28 threads across workloads of 1,000, 10,000, 100,000, and 1,000,000 elements.
+\end{abstract}
+
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below.
+%%
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10010147.10010169.10010170</concept_id>
+       <concept_desc>Computing methodologies~Parallel algorithms</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10010147.10010169.10010170.10010171</concept_id>
+       <concept_desc>Computing methodologies~Shared memory algorithms</concept_desc>
+       <concept_significance>300</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10003752.10003809</concept_id>
+       <concept_desc>Theory of computation~Design and analysis of algorithms</concept_desc>
+       <concept_significance>300</concept_significance>
+       </concept>
+ </ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Computing methodologies~Parallel algorithms}
+\ccsdesc[300]{Computing methodologies~Shared memory algorithms}
+\ccsdesc[300]{Theory of computation~Design and analysis of algorithms}
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+% \keywords{Keywords}
+
+% \received{20 February 2007}
+% \received[revised]{12 March 2009}
+% \received[accepted]{5 June 2009}
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+
+\section{Findings}
+\subsection{Sequential Algorithm vs Parallel Algorithm 1 (O(NlogN)): }
+The sequential algorithm consistently outperformed P1 across nearly all configurations. For 1,000 elements, the sequential algorithm was 1,000× faster with 8 threads, increasing to over 200,000× faster with 28 threads. At 10,000 elements, the gap narrowed to 20× with 8 threads but still grew to 6,700× with 28 threads.
+
+For 100,000 elements, performance differences diminished significantly, only 2× faster with 8 threads, though the gap widened to approximately 450× at 28 threads. At 1,000,000 elements, the sequential algorithm maintained a modest 1.4-1.8× advantage for 8-24 threads but jumped to 181× faster at 28 threads.
+
+Conclusion: The sequential algorithm proved more efficient in the vast majority of cases, with P1's parallel overhead severely impacting performance, especially at 28 threads.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\linewidth]{seq vs p1.png}
+    \caption{Sequential algorithm vs P1 algorithm}
+    \label{fig:placeholder}
+    \Description{Graph 1}
+\end{figure}
+
+\subsection{Sequential vs Parallel Algorithm 2 (2(N-1)):}
+P2 was fairly efficient for large workloads with optimal thread counts but underperformed on smaller datasets. For 1,000 elements, P2 was 75-125× slower with 8-24 threads and far 362,000× slower at 28 threads. At 10,000 elements, P2 remained 4-6× slower for 8-24 threads and 12,900× slower at 28 threads.
+
+Performance became competitive at 100,000 elements, where P2 was 1.3-1.5× faster with 8-16 threads and marginally slower with 24 threads. For 1,000,000 elements, P2’s performance excelled with 8-24 threads (2.5-2.7× faster) but took a significant hit at 28 threads (351× slower).
+
+Conclusion: P2 effectively parallelizes large workloads with moderate thread counts but suffers severe overhead penalties with excessive threading or small datasets.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\linewidth]{seq vs p2.png}
+    \caption{Sequential algorithm vs P2 algorithm}
+    \label{fig:placeholder}
+    \Description{Graph 2}
+\end{figure}
+
+\subsection{Parallel Algorithm 1 vs Parallel Algorithm 2:}
+P2 consistently outperformed P1 except under high thread contention. For 1,000 elements, P2 was 8-11× faster with 8-24 threads but 1.8× slower at 28 threads. This pattern repeated at 10,000 elements (P2: 4-8× faster for 8-24 threads, 1.9× slower at 28 threads).
+
+At 100,000 elements, P2 maintained a 2.9-4.7× advantage for 8-24 threads and dramatically outperformed P1 by 605× at 28 threads—a notable exception to the trend. For 1,000,000 elements, P2 was approximately 4× faster with 8-24 threads but 1.9× slower at 28 threads.
+
+Conclusion: P2's two-pass approach generally outperforms P1's logarithmic design, though both algorithms suffer at 28 threads due to excessive parallelization overhead, with P2 showing anomalous resilience only at 100,000 elements.
+
+\subsection{Conclusion}
+P2's two-pass approach generally outperforms P1's logarithmic design across most configurations. However, both parallel algorithms suffer severe performance degradation at 28 threads due to excessive overhead. The sequential algorithm was generally more efficient for workloads under 100,000 elements and at 28 threads regardless of workload size. With optimal thread counts (8-16 threads) and large workloads (100,000+ elements), P2 surpassed the sequential algorithm while P1 approached comparable performance. These results demonstrate that parallel prefix sum algorithms only provide benefits when workload size justifies the overhead and thread count is optimal.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\linewidth]{p1 vs p2.png}
+    \caption{P1 algorithm vs P2 algorithm}
+    \label{fig:placeholder}
+    \Description{Graph 3}
+\end{figure}
+
+%%
+%% If your work has an appendix, this is the place to put it.
+% \appendix
+
+% \section{Research Methods}
+
+% \subsection{Part One}
+
+% Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+% malesuada, quam in pulvinar varius, metus nunc fermentum urna, id
+% sollicitudin purus odio sit amet enim. Aliquam ullamcorper eu ipsum
+% vel mollis. Curabitur quis dictum nisl. Phasellus vel semper risus, et
+% lacinia dolor. Integer ultricies commodo sem nec semper.
+
+% \subsection{Part Two}
+
+% Etiam commodo feugiat nisl pulvinar pellentesque. Etiam auctor sodales
+% ligula, non varius nibh pulvinar semper. Suspendisse nec lectus non
+% ipsum convallis congue hendrerit vitae sapien. Donec at laoreet
+% eros. Vivamus non purus placerat, scelerisque diam eu, cursus
+% ante. Etiam aliquam tortor auctor efficitur mattis.
+
+% \section{Online Resources}
+
+% Nam id fermentum dui. Suspendisse sagittis tortor a nulla mollis, in
+% pulvinar ex pretium. Sed interdum orci quis metus euismod, et sagittis
+% enim maximus. Vestibulum gravida massa ut felis suscipit
+% congue. Quisque mattis elit a risus ultrices commodo venenatis eget
+% dui. Etiam sagittis eleifend elementum.
+
+% Nam interdum magna at lectus dignissim, ac dignissim lorem
+% rhoncus. Maecenas eu arcu ac neque placerat aliquam. Nunc pulvinar
+% massa et mattis lacinia.
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-acmtog.tex'.
