@@ -395,6 +395,19 @@ void spmv_coo(unsigned int* row_ind, unsigned int* col_ind, double* vals,
               int m, int n, int nnz, double* vector_x, double *res, 
               omp_lock_t* writelock)
 {
+    #pragma omp parallel for
+    for(int i = 0; i < m; i ++){
+        res[i] = 0.0;
+    }
+
+    #pragma omp parallel for
+    for(int i = 0; i < nnz; i++){
+        int output_index = row_ind[i];
+        double output = vector_x[col_ind[i]] * vals[i];
+        omp_set_lock(writelock);  
+        res[output_index] += output;
+        omp_unset_lock(writelock);
+    }
 }
 
 
@@ -405,6 +418,15 @@ void spmv(unsigned int* csr_row_ptr, unsigned int* csr_col_ind,
           double* csr_vals, int m, int n, int nnz, 
           double* vector_x, double *res)
 {
+    #pragma omp parallel for
+    for(int i = 0; i < m; i++){
+        int lower_bound = csr_row_ptr[i]; int upper_bound = csr_row_ptr[i + 1]; 
+        double output = 0.0;
+        for(int j = lower_bound; j < upper_bound; j++){
+            output += csr_vals[j] * vector_x[csr_col_ind[j]];
+        }
+        res[i] = output;
+    }
 }
 
 
@@ -413,6 +435,15 @@ void spmv(unsigned int* csr_row_ptr, unsigned int* csr_col_ind,
 void spmv_coo_ser(unsigned int* row_ind, unsigned int* col_ind, double* vals, 
                   int m, int n, int nnz, double* vector_x, double *res)
 {
+    for(int i = 0; i < m; i ++){
+        res[i] = 0.0;
+    }
+
+    for(int i = 0; i < nnz; i++){
+        int output_index = row_ind[i];
+        double output = vector_x[col_ind[i]] * vals[i]; 
+        res[output_index] += output;
+    }
 }
 
 
@@ -423,6 +454,14 @@ void spmv_ser(unsigned int* csr_row_ptr, unsigned int* csr_col_ind,
               double* csr_vals, int m, int n, int nnz, 
               double* vector_x, double *res)
 {
+    for(int i = 0; i < m; i++){
+        int lower_bound = csr_row_ptr[i]; int upper_bound = csr_row_ptr[i + 1]; 
+        int output = 0;
+        for(int j = lower_bound; j < upper_bound; j++){
+            output += csr_vals[j] * vector_x[csr_col_ind[j]];
+        }
+        res[i] = output;
+    }
 }
 
 
