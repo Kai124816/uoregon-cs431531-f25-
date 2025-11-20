@@ -12,10 +12,9 @@ __global__ void
 spmv_kernel_ell(unsigned int* col_ind, T* vals, int m, int n, int nnz, 
                 double* x, double* b)
 {
-
-    // COMPLETE THIS FUNCTION
+    extern __shared__ double store[];
+    
 }
-
 
 
 void spmv_gpu_ell(unsigned int* col_ind, double* vals, int m, int n, int nnz, 
@@ -49,15 +48,22 @@ void spmv_gpu_ell(unsigned int* col_ind, double* vals, int m, int n, int nnz,
 
 }
 
-
-
-
 void allocate_ell_gpu(unsigned int* col_ind, double* vals, int m, int n, 
                       int nnz, double* x, unsigned int** dev_col_ind, 
                       double** dev_vals, double** dev_x, double** dev_b)
 {
-    // copy ELL data to GPU and allocate memory for output
-    // COMPLETE THIS FUNCTION
+    cudaMalloc(dev_col_ind, sizeof(double) * nnz);
+    cudaMalloc(dev_vals, sizeof(double) * nnz);
+    cudaMalloc(dev_x, sizeof(double) * m);
+    cudaMalloc(dev_b, sizeof(double) * m);
+    double* copy_arr = (double*)calloc(m, sizeof(double));
+
+    cudaMemcpy(dev_col_ind, col_ind, sizeof(double) * nnz, cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_vals, vals, sizeof(double) * nnz, cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_x, x, sizeof(double) * m, cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_b, copy_arr, sizeof(double) * m, cudaMemcpyHostToDevice);
+
+    free(copy_arr);
 }
 
 void allocate_csr_gpu(unsigned int* row_ptr, unsigned int* col_ind, 
@@ -65,8 +71,20 @@ void allocate_csr_gpu(unsigned int* row_ptr, unsigned int* col_ind,
                       unsigned int** dev_row_ptr, unsigned int** dev_col_ind,
                       double** dev_vals, double** dev_x, double** dev_b)
 {
-    // copy CSR data to GPU and allocate memory for output
-    // COMPLETE THIS FUNCTION
+    cudaMalloc(dev_row_ptr, sizeof(double) * m + 1);
+    cudaMalloc(dev_col_ind, sizeof(double) * nnz);
+    cudaMalloc(dev_vals, sizeof(double) * nnz);
+    cudaMalloc(dev_x, sizeof(double) * m);
+    cudaMalloc(dev_b, sizeof(double) * m);
+    double* copy_arr = (double*)calloc(m,sizeof(double));
+
+    cudaMemcpy(dev_row_ptr, row_ptr, sizeof(double) * m + 1, cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_col_ind, vals, sizeof(double) * nnz, cudaMemcpyHostToDevice);
+    cudaMalloc(dev_vals, sizeof(double) * nnz);
+    cudaMemcpy(dev_x, x, sizeof(double) * m, cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_b, copy_arr, sizeof(double) * m, cudaMemcpyHostToDevice);
+
+    free(copy_arr);
 }
 
 void get_result_gpu(double* dev_b, double* b, int m)
@@ -133,7 +151,6 @@ __global__ void
 spmv_kernel(unsigned int* row_ptr, unsigned int* col_ind, T* vals, 
             int m, int n, int nnz, double* x, double* b)
 {
-    // COMPLETE THIS FUNCTION
 }
 
 

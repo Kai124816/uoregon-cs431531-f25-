@@ -91,7 +91,6 @@ int main(int argc, char** argv)
     assert(n == vector_size);
     fprintf(stdout, "file loaded\n");
 
-
     // Calculate COO SpMV
     // first set up some locks
     t0 = ReadTSC();
@@ -111,8 +110,6 @@ int main(int argc, char** argv)
     timer[SPMV_COO_TIME] += ElapsedTime(ReadTSC() - t0);
     fprintf(stdout, "done\n");
 
-
-
     // Calculate CSR SpMV
     double *res_csr = (double*) malloc(sizeof(double) * m);;
     assert(res_csr);
@@ -122,7 +119,6 @@ int main(int argc, char** argv)
         // IMPLEMENT THIS FUNCTION - MAKE SURE IT'S PARALLELIZED 
         spmv(csr_row_ptr, csr_col_ind, csr_vals, m, n, nnz, vector_x, res_csr);
     }
-    timer[SPMV_CSR_TIME] += ElapsedTime(ReadTSC() - t0);
     fprintf(stdout, "done\n");
 
 
@@ -142,12 +138,12 @@ int main(int argc, char** argv)
 
 
     // Calculate CSR SpMV in serial
-    double *res_csr_ser = (double*) malloc(sizeof(double) * m);;
+    double *res_csr_ser = (double*) malloc(sizeof(double) * m);
     assert(res_csr_ser);
-    fprintf(stdout, "Calculating CSR SpMV ... ");
+    fprintf(stdout, "Calculating CSR SpMV serial ... ");
     t0 = ReadTSC();
     for(unsigned int i = 0; i < MAX_ITER; i++) {
-        // IMPLEMENT THIS FUNCTION - MAKE SURE IT'S PARALLELIZED 
+        // IMPLEMENT THIS FUNCTION
         spmv_ser(csr_row_ptr, csr_col_ind, csr_vals, m, n, nnz, vector_x, 
                  res_csr_ser);
     }
@@ -166,10 +162,8 @@ int main(int argc, char** argv)
     timer[STORE_TIME] += ElapsedTime(ReadTSC() - t0);
     fprintf(stdout, "file saved\n");
 
-
     // print timer
     print_time(timer);
-
 
     // Free memory
     free(csr_row_ptr);
@@ -349,6 +343,36 @@ void convert_coo_to_csr(int* row_ind, int* col_ind, double* val,
                         double** csr_vals)
 
 {
+    *csr_row_ptr = (unsigned int*) calloc(m + 1, sizeof(unsigned int));
+    *csr_col_ind = (unsigned int*) malloc(nnz * sizeof(unsigned int));
+    *csr_vals = (double*) malloc(nnz * sizeof(double));
+
+    unsigned int* histogram = (unsigned int*) calloc(m, sizeof(unsigned int));
+
+    for(int i = 0; i < nnz; i++){
+        histogram[row_ind[i] - 1]++;
+    }
+
+    int prefix_sum = 0;
+
+    for(int i = 0; i < m; i++){
+        (*csr_row_ptr)[i] = prefix_sum;
+        prefix_sum += histogram[i];
+    }
+
+    (*csr_row_ptr)[m] = prefix_sum;
+    unsigned int* offsets = (unsigned int*) calloc(m, sizeof(unsigned int));
+
+    // Scatter COO into CSR
+    for (int i = 0; i < nnz; i++) {
+        int r = row_ind[i] - 1;
+        unsigned int dest = (*csr_row_ptr)[r] + offsets[r]++;
+        (*csr_col_ind)[dest] = col_ind[i] - 1;
+        (*csr_vals)[dest] = val[i];
+    }
+
+    free(histogram);
+    free(offsets);
 }
 
 /* Reads in a vector from file.
@@ -401,16 +425,20 @@ void spmv_coo(unsigned int* row_ind, unsigned int* col_ind, double* vals,
     }
 
     #pragma omp parallel for
-    for(int i = 0; i < nnz; i++){
-        int output_index = row_ind[i];
-        double output = vector_x[col_ind[i]] * vals[i];
-        omp_set_lock(writelock);  
-        res[output_index] += output;
-        omp_unset_lock(writelock);
+    for (int i = 0; i < nnz; ++i) {
+        unsigned int r = row_ind[i] - 1;
+        unsigned int c = col_ind[i] - 1;
+
+        if (r >= m || c >= n || r < 0 || c < 0) {
+            continue;
+        }
+
+        double contrib = vector_x[c] * vals[i];
+
+        #pragma omp atomic
+        res[r] += contrib;
     }
 }
-
-
 
 /* SpMV function for CSR stored sparse matrix
  */
@@ -429,7 +457,6 @@ void spmv(unsigned int* csr_row_ptr, unsigned int* csr_col_ind,
     }
 }
 
-
 /* SpMV function for COO stored sparse matrix
  */
 void spmv_coo_ser(unsigned int* row_ind, unsigned int* col_ind, double* vals, 
@@ -440,13 +467,11 @@ void spmv_coo_ser(unsigned int* row_ind, unsigned int* col_ind, double* vals,
     }
 
     for(int i = 0; i < nnz; i++){
-        int output_index = row_ind[i];
-        double output = vector_x[col_ind[i]] * vals[i]; 
+        int output_index = row_ind[i] - 1;
+        double output = vector_x[col_ind[i] - 1] * vals[i]; 
         res[output_index] += output;
     }
 }
-
-
 
 /* SpMV function for CSR stored sparse matrix
  */
@@ -463,8 +488,6 @@ void spmv_ser(unsigned int* csr_row_ptr, unsigned int* csr_col_ind,
         res[i] = output;
     }
 }
-
-
 
 /* Save result vector in a file
  */

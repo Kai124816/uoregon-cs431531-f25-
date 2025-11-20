@@ -21,8 +21,6 @@
 #define GPU_ELL_TIME     3
 #define STORE_TIME       6
 
-
-
 int main(int argc, char** argv)
 {
     // program info
