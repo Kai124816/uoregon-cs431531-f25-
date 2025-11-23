@@ -133,12 +133,12 @@ int main(int argc, char** argv)
     double* dex; // input x on GPU
     double* deb; // result b on GPU
     t0 = ReadTSC();
-    allocate_ell_gpu(ell_col_ind, ell_vals, m, n_new, nnz, x, &dec, &dev, &dex,
+    allocate_ell_gpu(ell_col_ind, ell_vals, m, n, n_new, x, &dec, &dev, &dex,
                      &deb);
     timer[GPU_ALLOC_TIME] += ElapsedTime(ReadTSC() - t0);
 
     t0 = ReadTSC();
-    spmv_gpu_ell(dec, dev, m, n_new, nnz, dex, deb);
+    spmv_gpu_ell(dec, dev, m, n, n_new, dex, deb);
     timer[GPU_ELL_TIME] += ElapsedTime(ReadTSC() - t0);
 
     // copy data back from the GPU
@@ -147,7 +147,6 @@ int main(int argc, char** argv)
     t0 = ReadTSC();
     get_result_gpu(deb, be, m);
     timer[GPU_ALLOC_TIME] += ElapsedTime(ReadTSC() - t0);
-
 
 
     // Calculate CPU SPMV
@@ -598,7 +597,34 @@ void convert_csr_to_ell(unsigned int* csr_row_ptr, unsigned int* csr_col_ind,
                         unsigned int** ell_col_ind, double** ell_vals, 
                         int* n_new)
 {
-    // COMPLETE THIS FUNCTION
+    *n_new = 0;
+    for(int i = 0; i < m; i++){
+        int row_nnz = csr_row_ptr[i + 1] - csr_row_ptr[i];
+        if(row_nnz > *n_new){
+            *n_new = row_nnz;
+        }
+    }
+
+    int k = *n_new;
+    *ell_col_ind = (unsigned int*) malloc(m * k * sizeof(unsigned int));
+    *ell_vals = (double*) malloc(m * k * sizeof(double));
+
+    for(int i = 0; i < m; i++){
+        int stride = csr_row_ptr[i + 1] - csr_row_ptr[i];
+        for(int j = 0; j < k; j++){
+            int offset = i * k + j;
+
+            if(j >= stride){
+                (*ell_col_ind)[offset] = n;
+                (*ell_vals)[offset]    = 0.0;
+            } else {
+                int csr_index = csr_row_ptr[i] + j;
+                (*ell_col_ind)[offset] = csr_col_ind[csr_index];
+                (*ell_vals)[offset]    = csr_vals[csr_index];
+            }
+        }
+    }
 }
+
 
 
