@@ -119,6 +119,7 @@ int main(int argc, char** argv)
         // IMPLEMENT THIS FUNCTION - MAKE SURE IT'S PARALLELIZED 
         spmv(csr_row_ptr, csr_col_ind, csr_vals, m, n, nnz, vector_x, res_csr);
     }
+    timer[SPMV_CSR_TIME] += ElapsedTime(ReadTSC() - t0);
     fprintf(stdout, "done\n");
 
 
