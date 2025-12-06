@@ -478,46 +478,50 @@ void destroy_locks(omp_lock_t* locks, int m)
     free(locks);
 }
 
-
-
-void spmv_coo_naive(int world_rank, int world_size, int* row_ind, int* col_ind,                     double* val, int m, int n, int nnz, double* vector_x, 
-					double** res, double timer[])
+void spmv_coo_naive(int world_rank, int world_size, int* row_ind, int* col_ind,
+    double* val, int m, int n, int nnz, double* vector_x, 
+    double** res, double timer[])
 {
-	// timers
+    // Timers
     double start;
     double end;
 
-	
-	// --------------------------------------------------------------------
-	// STEP 1 Calculate how much work each node needs to do
+    // --------------------------------------------------------------------
+    // STEP 1: Calculate how much work each node needs to do
     // Rank 0 now determines how work will be distributed among the ranks
-    int nnz_per_rank = 0;
-	// TODO 
-	// --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    int nnz_per_rank = (nnz + world_size - 1) / world_size;
 
-
-	// --------------------------------------------------------------------
-	// STEP 2 Send data to set up the computation
-	// start measuring time for 
-	// broadcasting the nnz_per_rank, m, n, and vector x to all the nodes
+    // --------------------------------------------------------------------
+    // STEP 2: Send data to set up the computation
+    // Broadcasting the nnz_per_rank, m, n, and vector x to all the nodes
+    // --------------------------------------------------------------------
+    // STEP 2: Send data to set up the computation
     start = MPI_Wtime();
-	// broadcast nnz_per_rank and nnz
-	// TODO
-    // broadcasting m and n
-	// TODO 
-	// Lastly, broadcast the input vector x
-	// TODO
-	// stop timer and record it in the timer array
+    // Broadcast matrix size and partitioning information (m, n, nnz, nnz_per_rank)
+    MPI_Bcast(&nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&nnz_per_rank, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&m, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    if (world_rank != 0) {
+        // We assume the original 'vector_x' pointer passed to the function is NULL 
+        // or unallocated on non-root ranks.
+        vector_x = (double*)malloc(m * sizeof(double));
+        assert(vector_x);
+    }
+
+    // 3. Broadcast the input vector x (size 'm')
+    MPI_Bcast(vector_x, m, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
     end = MPI_Wtime();
     timer[VEC_BCAST_TIME] = end - start;
-	// --------------------------------------------------------------------
 
-
-	// --------------------------------------------------------------------
-	// STEP 3 Send the sparse matrix
-    // First, pad the data so that we can use MPI_Scatter instead of 
-    // MPI_Scatterv
-    if(world_rank == 0) {
+    // --------------------------------------------------------------------
+    // STEP 3: Send the sparse matrix
+    // First, pad the data so that we can use MPI_Scatter instead of MPI_Scatterv
+    // --------------------------------------------------------------------
+    if (world_rank == 0) {
         int new_nnz = nnz_per_rank * world_size;
 
         int* row_ind_tmp = (int*) malloc(sizeof(int) * new_nnz);
@@ -544,9 +548,8 @@ void spmv_coo_naive(int world_rank, int world_size, int* row_ind, int* col_ind, 
         col_ind = col_ind_tmp;
         val = val_tmp;
     } else {
-        // Everyone else should get ready to receive the appropriate 
-        // amount of data
-		// Each process will be responsible for nnz_per_rank non-zero elements
+        // Everyone else should get ready to receive the appropriate amount of data
+        // Each process will be responsible for nnz_per_rank non-zero elements
         row_ind = (int*) malloc(sizeof(int) * nnz_per_rank);
         assert(row_ind);
 
@@ -557,64 +560,69 @@ void spmv_coo_naive(int world_rank, int world_size, int* row_ind, int* col_ind, 
         assert(val);
     }
 
-    start = MPI_Wtime();    
+    start = MPI_Wtime();
+
     // Scatter the data to each node
-	// There should be 3 scatters - one for row_ind, one for col_ind, and
-	// one for val
-	// TODO
+    // There should be 3 scatters - one for row_ind, one for col_ind, and one for val
+    MPI_Scatter(row_ind, nnz_per_rank, MPI_INT, row_ind, nnz_per_rank, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Scatter(col_ind, nnz_per_rank, MPI_INT, col_ind, nnz_per_rank, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Scatter(val, nnz_per_rank, MPI_DOUBLE, val, nnz_per_rank, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
     end = MPI_Wtime();
     timer[MAT_SCATTER_TIME] = end - start;
-	// --------------------------------------------------------------------
 
+    // --------------------------------------------------------------------
+    // STEP 4: Do local SpMV using COO
+    // --------------------------------------------------------------------
 
-	// --------------------------------------------------------------------
-	// STEP 4 - Do local SpMV using COO
     // First set up some locks
     start = MPI_Wtime();
-    omp_lock_t* writelock; 
+    omp_lock_t* writelock;
     init_locks(&writelock, m);
     end = MPI_Wtime();
     timer[LOCK_INIT_TIME] = end - start;
 
-    // set up result vector
+    // Set up result vector
     start = MPI_Wtime();
-    double* res_coo = (double*) malloc(sizeof(double) * m);;
+    double* res_coo = (double*) malloc(sizeof(double) * m);
     assert(res_coo);
 
     fprintf(stdout, "Calculating COO SpMV ... ");
+
     // Calculate SPMV using COO
-    spmv_coo(row_ind, col_ind, val, m, n, nnz_per_rank, vector_x, res_coo, 
-             writelock);
+    spmv_coo(row_ind, col_ind, val, m, n, nnz_per_rank, vector_x, res_coo, writelock);
+
     fprintf(stdout, "done\n");
     end = MPI_Wtime();
     timer[SPMV_COO_TIME] = end - start;
+
     // Make sure everyone's finished before doing any communication
     MPI_Barrier(MPI_COMM_WORLD);
-	// --------------------------------------------------------------------
 
-
-	// --------------------------------------------------------------------
-	// STEP 5 - Calculate the final result from local results
+    // --------------------------------------------------------------------
+    // STEP 5: Calculate the final result from local results
     // Each rank has partial result - reduce to get the final result to rank 0
-	// TODO 
+    // --------------------------------------------------------------------
     double* res_coo_final = NULL;
-    if(world_rank == 0) {
+    if (world_rank == 0) {
         res_coo_final = (double*) malloc(sizeof(double) * m);
         assert(res_coo_final);
         memset(res_coo_final, 0, sizeof(double) * m);
     }
+
     start = MPI_Wtime();
-	// Get the result from everyone and calculate the final result
-	// TODO
+
+    // Get the result from everyone and calculate the final result
+    MPI_Reduce(res_coo, res_coo_final, m, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
     end = MPI_Wtime();
     timer[RES_REDUCE_TIME] = end - start;
-	// --------------------------------------------------------------------
 
-	*res = res_coo_final;
+    *res = res_coo_final;
 
-	// Clean up
+    // Clean up
     free(res_coo);
-    if(world_rank == 0) {
+    if (world_rank == 0) {
         free(res_coo_final);
         free(vector_x);
         free(row_ind);
@@ -622,7 +630,6 @@ void spmv_coo_naive(int world_rank, int world_size, int* row_ind, int* col_ind, 
         free(val);
     }
     destroy_locks(writelock, m);
-
 }
 
 #if 0

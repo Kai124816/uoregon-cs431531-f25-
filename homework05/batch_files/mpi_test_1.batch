@@ -2,8 +2,8 @@
 #SBATCH --account=cis431_531     ### change this to your actual charge account 
 #SBATCH --partition=compute      ### queue to submit to
 #SBATCH --job-name=mpi_test	     ### job name
-#SBATCH --output=mpi_test_%A.out ### file in which to store job stdout
-#SBATCH --error=mpi_test_%A.err  ### file in which to store job stderr
+#SBATCH --output=mpi_test_1_%A.out ### file in which to store job stdout
+#SBATCH --error=mpi_test_1_%A.err  ### file in which to store job stderr
 #SBATCH --time=2                 ### wall-clock time limit, in minutes
 #SBATCH --mem=100000M            ### memory limit per node, in MB
 #SBATCH --nodes=1                ### number of nodes to use
